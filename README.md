@@ -9,7 +9,7 @@ An autonomous multi-agent orchestration framework prototype inspired by Emergent
 Before you begin, ensure you have the following installed:
 - **Python 3.10+**
 - **Node.js & npm** (for the Web Dashboard)
-- **Google Cloud SDK (gcloud)** (for Vertex AI authentication)
+- **Google Cloud SDK (gcloud)** (Optional, for authentication)
 - **Poetry** (Python dependency manager)
 
 ---
@@ -47,12 +47,14 @@ Before you begin, ensure you have the following installed:
    ```env
    VERTEX_PROJECT_ID=your-project-id-here
    VERTEX_LOCATION=us-central1
+   GOOGLE_APPLICATION_CREDENTIALS=service-account-key.json
    ```
 
-3. **Authenticate with Google Cloud:**
-   ```bash
-   gcloud auth application-default login
-   ```
+3. **Authenticate with Google Cloud (Option A - Recommended):**
+   Place your Service Account JSON key in the root folder and set the path in `.env`.
+
+   **Option B (Individual):**
+   Run `gcloud auth application-default login`.
 
 ---
 
