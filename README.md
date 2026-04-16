@@ -1,65 +1,110 @@
-# Wingi Agent System
+# 🚀 Wingi Agent System
 
-An autonomous multi-agent orchestration framework prototype inspired by Emergent.
+An autonomous multi-agent orchestration framework prototype inspired by Emergent. This system allows you to build entire applications from a single prompt by orchestrating a team of specialized AI agents.
 
-## Key Features
+---
 
-- **Live Gemini Integration**: Supports both Google AI Studio and **Vertex AI** (Enterprise).
-- **Autonomous Planning**: Decomposes user goals into a Dynamic Task Graph.
-- **Real Tool Execution**: Includes a ToolBox for file I/O and shell command execution.
-- **Stateful Orchestration**: Manages task dependencies and execution cycles.
-- **Web Dashboard**: Modern React UI to visualize agent progress.
-- **Structured Logging**: Emoji-enriched debugging logs for full transparency.
+## 🛠️ Prerequisites
 
-## Installation
+Before you begin, ensure you have the following installed:
+- **Python 3.10+**
+- **Node.js & npm** (for the Web Dashboard)
+- **Google Cloud SDK (gcloud)** (for Vertex AI authentication)
+- **Poetry** (Python dependency manager)
 
-We use **Poetry** for modern dependency and package management.
+---
 
-1. Clone the repository:
+## 📥 Installation
+
+1. **Clone the repository:**
    ```bash
    git clone https://github.com/AnilPal83/wingi-agent-system.git
    cd wingi-agent-system
    ```
 
-2. Install Poetry (if you don't have it):
-   ```bash
-   curl -sSL https://install.python-poetry.org | python3 -
-   ```
-
-3. Install the dependencies:
+2. **Install Python dependencies:**
    ```bash
    poetry install
    ```
 
-4. Set up your environment variables:
+3. **Install UI dependencies:**
    ```bash
-   cp .env.example .env
-   # Add your VERTEX_PROJECT_ID or GOOGLE_API_KEY to .env
+   cd ui
+   npm install
+   cd ..
    ```
 
-## Usage
+---
 
-### CLI Mode
+## ⚙️ Configuration
+
+1. **Create your environment file:**
+   ```bash
+   cp .env.example .env
+   ```
+
+2. **Edit `.env`** and add your Google Cloud Project ID:
+   ```env
+   VERTEX_PROJECT_ID=your-project-id-here
+   VERTEX_LOCATION=us-central1
+   ```
+
+3. **Authenticate with Google Cloud:**
+   ```bash
+   gcloud auth application-default login
+   ```
+
+---
+
+## 🚀 Running the System
+
+### Option A: Web Dashboard (Recommended)
+This gives you a visual view of the agent's task graph and real-time logs.
+
+1. **Start the Backend:**
+   ```bash
+   poetry run python server.py
+   ```
+
+2. **Start the Frontend (in a new terminal):**
+   ```bash
+   cd ui
+   npm run dev
+   ```
+3. Open **http://localhost:5173** in your browser.
+
+### Option B: CLI Mode
+For a fast, terminal-only experience.
 ```bash
 poetry run python main.py
 ```
 
-### Web Dashboard Mode
-1. Start the server:
-   ```bash
-   poetry run python server.py
-   ```
-2. Run the UI (requires Node.js):
-   ```bash
-   cd ui && npm install && npm run dev
-   ```
-Go to `localhost:5173` in your browser.
+---
 
-## Project Structure
+## 🏗️ Architecture
 
-- `core/`: Core engine, Gemini/Vertex clients, and data models.
-- `agents/`: System prompts for specialized roles.
-- `tools/`: Registry for file and system tools.
+- **Orchestrator**: The central brain managing the Task Graph.
+- **Planner Agent**: Decomposes goals into actionable steps.
+- **Architect Agent**: Designs the tech stack and schemas.
+- **Coder Agent**: Implements the actual code.
+- **Memory Agent**: Indexes the project to maintain a "Context Map".
+- **Verifier Agent**: Runs tests and validates the output.
+
+---
+
+## 📁 Project Structure
+
+- `core/`: State machine, Vertex AI client, and data models.
+- `agents/`: Specialized system prompts for each role.
+- `tools/`: The "hands" (File I/O and Shell tools).
 - `ui/`: React TypeScript dashboard.
-- `main.py`: CLI entry point.
-- `server.py`: FastAPI WebSocket backend.
+- `server.py`: FastAPI WebSocket server.
+
+---
+
+## 📝 Debugging
+
+The system outputs emoji-enriched logs to help you follow the agent's thoughts:
+- ✨ **INFO**: General progress updates.
+- 🔍 **DEBUG**: Internal reasoning and task transitions.
+- ❌ **ERROR**: API issues or task failures.
