@@ -1,6 +1,7 @@
 import os
 import json
-import google.generativeai as genai
+import vertexai
+from vertexai.generative_models import GenerativeModel, GenerationConfig
 from dotenv import load_dotenv
 from .logger import setup_logger
 
@@ -9,35 +10,48 @@ load_dotenv()
 
 class LLMClient:
     def __init__(self):
-        self.api_key = os.getenv("GOOGLE_API_KEY")
-        if not self.api_key:
-            logger.error("GOOGLE_API_KEY not found in .env file.")
-            raise ValueError("❌ GOOGLE_API_KEY not found in .env file.")
+        self.project_id = os.getenv("VERTEX_PROJECT_ID")
+        self.location = os.getenv("VERTEX_LOCATION", "us-central1")
         
-        genai.configure(api_key=self.api_key)
-        self.model = genai.GenerativeModel('gemini-1.5-pro')
-        logger.info("Gemini 1.5 Pro client initialized.")
+        if not self.project_id:
+            logger.error("VERTEX_PROJECT_ID not found in .env file.")
+            raise ValueError("❌ VERTEX_PROJECT_ID not found in .env file.")
+        
+        # Initialize Vertex AI
+        vertexai.init(project=self.project_id, location=self.location)
+        
+        # We use gemini-1.5-pro for better quota stability compared to 2.0-flash
+        self.model_name = os.getenv("VERTEX_MODEL_NAME", "gemini-1.5-pro")
+        self.model = GenerativeModel(self.model_name)
+        logger.info(f"Vertex AI initialized with model: {self.model_name}")
 
     def query(self, system_prompt: str, user_prompt: str, response_format="text"):
-        """Queries the Gemini LLM and returns the response."""
-        logger.info(f"Sending query to Gemini (Format: {response_format})")
-        logger.debug(f"User Prompt (Truncated): {user_prompt[:100]}...")
+        """Queries the Vertex AI Gemini model and returns the response."""
+        logger.info(f"Sending query to Vertex AI (Format: {response_format})")
         
         try:
-            combined_prompt = f"SYSTEM INSTRUCTION:\n{system_prompt}\n\nUSER REQUEST:\n{user_prompt}"
+            # Vertex AI uses System Instructions as a separate parameter
+            model = GenerativeModel(
+                self.model_name,
+                system_instruction=[system_prompt]
+            )
             
-            generation_config = {}
-            if response_format == "json":
-                generation_config = {"response_mime_type": "application/json"}
+            config = GenerationConfig(
+                response_mime_type="application/json" if response_format == "json" else "text/plain"
+            )
             
-            response = self.model.generate_content(
-                combined_prompt,
-                generation_config=generation_config
+            response = model.generate_content(
+                user_prompt,
+                generation_config=config
             )
             
             content = response.text
             logger.debug(f"Received Response (Truncated): {content[:100]}...")
             return json.loads(content) if response_format == "json" else content
+            
         except Exception as e:
-            logger.error(f"Gemini API Error: {str(e)}")
+            if "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e):
+                logger.error("🛑 QUOTA EXCEEDED (429): You have hit your Vertex AI rate limits.")
+            else:
+                logger.error(f"Vertex AI API Error: {str(e)}")
             return None
