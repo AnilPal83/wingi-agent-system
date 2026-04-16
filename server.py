@@ -77,7 +77,7 @@ async def websocket_endpoint(websocket: WebSocket):
             
             if message["type"] == "START_PROJECT":
                 goal = message["goal"]
-                orchestrator = Orchestrator(project_name=\"WebProject\", user_goal=goal)
+                orchestrator = Orchestrator(project_name="WebProject", user_goal=goal)
                 await websocket.send_json({"type": "PROJECT_STARTED", "project_id": orchestrator.project_id})
                 await websocket.send_json({"type": "LOG", "content": f"\ud83c\udfaf Goal received: {goal}"})
                 
