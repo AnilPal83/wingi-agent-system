@@ -79,11 +79,11 @@ async def websocket_endpoint(websocket: WebSocket):
                 goal = message["goal"]
                 orchestrator = Orchestrator(project_name="WebProject", user_goal=goal)
                 await websocket.send_json({"type": "PROJECT_STARTED", "project_id": orchestrator.project_id})
-                await websocket.send_json({"type": "LOG", "content": f"\ud83c\udfaf Goal received: {goal}"})
-                
+                await websocket.send_json({"type": "LOG", "content": f"🎯 Goal received: {goal}"})
+
                 orchestrator.bootstrap_plan()
                 await websocket.send_json({
-                    "type": "GRAPH_UPDATE", 
+                    "type": "GRAPH_UPDATE",
                     "nodes": [n.dict() for n in orchestrator.graph.nodes.values()]
                 })
 
@@ -96,17 +96,17 @@ async def websocket_endpoint(websocket: WebSocket):
                         continue
 
                     for task in runnable:
-                        await websocket.send_json({"type": "LOG", "content": f"\ud83d\ude80 Starting task: {task.description}"})
+                        await websocket.send_json({"type": "LOG", "content": f"🚀 Starting task: {task.description}"})
                         orchestrator.execute_task(task)
                         await websocket.send_json({
-                            "type": "GRAPH_UPDATE", 
+                            "type": "GRAPH_UPDATE",
                             "nodes": [n.dict() for n in orchestrator.graph.nodes.values()]
                         })
-                
-                await websocket.send_json({"type": "LOG", "content": "\ud83c\udfc1 Project Complete!"})
+
+                await websocket.send_json({"type": "LOG", "content": "🏁 Project Complete!"})
 
             elif message["type"] == "CHAT":
-                await websocket.send_json({"type": "LOG", "content": f"\ud83d\udcac You said: {message['content']}"})
+                await websocket.send_json({"type": "LOG", "content": f"💬 You said: {message['content']}"})
 
     except WebSocketDisconnect:
         pass
