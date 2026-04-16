@@ -20,10 +20,19 @@ export default function App() {
   const [input, setInput] = useState('');
   const [tasks, setTasks] = useState<Task[]>([]);
   const [ws, setWs] = useState<WebSocket | null>(null);
+  const [connected, setConnected] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const reconnectTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => {
-    const socket = new WebSocket('ws://localhost:8000/ws');
+  const connect = () => {
+    const socket = new WebSocket('ws://127.0.0.1:8000/ws');
+
+    socket.onopen = () => {
+      console.log("✅ WebSocket Connected");
+      setConnected(true);
+      setWs(socket);
+    };
+
     socket.onmessage = (event) => {
       const data = JSON.parse(event.data);
       if (data.type === 'LOG') {
@@ -32,24 +41,47 @@ export default function App() {
         setTasks(data.nodes);
       }
     };
-    setWs(socket);
-    return () => socket.close();
+
+    socket.onerror = (err) => {
+      console.error("❌ WebSocket Error:", err);
+    };
+
+    socket.onclose = () => {
+      console.warn("⚠️ WebSocket Closed — reconnecting in 3s...");
+      setConnected(false);
+      setWs(null);
+      reconnectTimer.current = setTimeout(connect, 3000);
+    };
+  };
+
+  useEffect(() => {
+    connect();
+    return () => {
+      reconnectTimer.current && clearTimeout(reconnectTimer.current);
+    };
   }, []);
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const handleSend = () => {
-    if (!input.trim() || !ws) return;
-    if (tasks.length === 0) {
-      ws.send(JSON.stringify({ type: 'START_PROJECT', goal: input }));
-    } else {
-      ws.send(JSON.stringify({ type: 'CHAT', content: input }));
-    }
-    setMessages(prev => [...prev, { role: 'user', content: input }]);
-    setInput('');
-  };
+const handleSend = () => {
+  if (!input.trim() || !ws) return;
+
+  if (ws.readyState !== WebSocket.OPEN) {
+    console.warn("WebSocket not ready ❌");
+    return;
+  }
+
+  if (tasks.length === 0) {
+    ws.send(JSON.stringify({ type: 'START_PROJECT', goal: input }));
+  } else {
+    ws.send(JSON.stringify({ type: 'CHAT', content: input }));
+  }
+
+  setMessages(prev => [...prev, { role: 'user', content: input }]);
+  setInput('');
+};
 
   return (
     <div className="flex h-screen bg-slate-950 text-slate-200">
@@ -87,7 +119,7 @@ export default function App() {
       <div className="flex-1 flex flex-col relative">
         <header className="h-16 border-b border-slate-800 flex items-center px-8 bg-slate-950/80 backdrop-blur-md sticky top-0 z-10">
           <h2 className="font-semibold text-lg flex items-center gap-2">
-             <div className="w-2 h-2 rounded-full bg-green-500"></div>
+             <div className={`w-2 h-2 rounded-full ${connected ? 'bg-green-500' : 'bg-red-500 animate-pulse'}`}></div>
              Wingi Orchestrator
           </h2>
         </header>

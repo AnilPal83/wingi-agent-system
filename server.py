@@ -27,7 +27,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 orchestrator = Orchestrator(project_name="WebProject", user_goal=goal)
                 await websocket.send_json({"type": "LOG", "content": f"🎯 Goal received: {goal}"})
                 
-                orchestrator.bootstrap_plan()
+                await asyncio.to_thread(orchestrator.bootstrap_plan)
                 await websocket.send_json({
                     "type": "GRAPH_UPDATE", 
                     "nodes": [n.dict() for n in orchestrator.graph.nodes.values()]
@@ -43,7 +43,7 @@ async def websocket_endpoint(websocket: WebSocket):
 
                     for task in runnable:
                         await websocket.send_json({"type": "LOG", "content": f"🚀 Starting task: {task.description}"})
-                        orchestrator.execute_task(task)
+                        await asyncio.to_thread(orchestrator.execute_task, task)
                         await websocket.send_json({
                             "type": "GRAPH_UPDATE", 
                             "nodes": [n.dict() for n in orchestrator.graph.nodes.values()]
