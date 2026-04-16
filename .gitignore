@@ -4,3 +4,6 @@ __pycache__/
 *.pyo
 node_modules/
 ui/dist/
+# Service account keys — never commit these
+*-sa.json
+*-service-account.json
