@@ -1,6 +1,9 @@
 from pydantic import BaseModel, Field
 from typing import List, Dict, Optional, Any
 from enum import Enum
+from .logger import setup_logger
+
+logger = setup_logger("Models")
 
 class TaskStatus(str, Enum):
     PENDING = "pending"
@@ -39,6 +42,13 @@ class TaskGraph(BaseModel):
         runnable = []
         for node in self.nodes.values():
             if node.status == TaskStatus.PENDING:
-                if all(self.nodes[dep].status == TaskStatus.COMPLETED for dep in node.dependencies):
+                # Check if all dependencies are completed
+                unmet_deps = [dep for dep in node.dependencies if self.nodes[dep].status != TaskStatus.COMPLETED]
+                if not unmet_deps:
                     runnable.append(node)
+                else:
+                    logger.debug(f"Task {node.id} is blocked by: {unmet_deps}")
+        
+        if runnable:
+            logger.info(f"Identified runnable tasks: {[t.id for t in runnable]}")
         return runnable
