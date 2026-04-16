@@ -1,8 +1,9 @@
 from .models import TaskGraph, TaskNode, TaskStatus, TaskType
 from .llm_client import LLMClient
 from tools.registry import ToolBox
-from agents.prompts import ORCHESTRATOR_SYSTEM_PROMPT, CODER_SYSTEM_PROMPT
+from agents.prompts import ORCHESTRATOR_SYSTEM_PROMPT, CODER_SYSTEM_PROMPT, MEMORY_AGENT_SYSTEM_PROMPT
 import json
+import os
 
 class Orchestrator:
     def __init__(self, project_name: str, user_goal: str):
@@ -16,7 +17,7 @@ class Orchestrator:
     def bootstrap_plan(self):
         """Asks the Planner LLM to generate the initial graph."""
         print("🧠 Planning the project...")
-        prompt = f"Goal: {self.user_goal}\n\nDecompose this into a valid JSON TaskGraph. Output only the 'nodes' array."
+        prompt = f"Goal: {self.user_goal}\n\nDecompose this into a valid JSON TaskGraph. Include a 'memory' task after architectural design to map the project. Output only the 'nodes' array."
         plan = self.llm.query(ORCHESTRATOR_SYSTEM_PROMPT, prompt, response_format="json")
         
         if plan and "nodes" in plan:
@@ -33,7 +34,7 @@ class Orchestrator:
         if not runnable:
             if all(n.status == TaskStatus.COMPLETED for n in self.graph.nodes.values()):
                 self.is_running = False
-                print("🏁 Project Complete.")
+                print("\n🏁 Project Complete.")
             return
 
         for task in runnable:
@@ -41,7 +42,7 @@ class Orchestrator:
 
     def execute_task(self, task: TaskNode):
         task.status = TaskStatus.RUNNING
-        print(f"🚀 Working on: {task.description}...")
+        print(f"🚀 [AGENT: {task.type.value.upper()}] Working on: {task.description}...")
 
         if task.type == TaskType.CODE:
             # Get implementation from Coder Agent
@@ -56,7 +57,20 @@ class Orchestrator:
                 print(status)
             else:
                 task.status = TaskStatus.FAILED
+
+        elif task.type == TaskType.MEMORY:
+            # Memory Agent scans the workspace
+            files = self.toolbox.list_files(self.workspace) if os.path.exists(self.workspace) else []
+            memory_prompt = f"Project Workspace contains: {files}. Scan and generate the Context Map."
+            summary = self.llm.query(MEMORY_AGENT_SYSTEM_PROMPT, memory_prompt, response_format="json")
+            
+            if summary:
+                task.output = summary
+                task.status = TaskStatus.COMPLETED
+                print(f"🧠 Memory Agent updated the context map for {len(files)} files.")
+            else:
+                task.status = TaskStatus.FAILED
         else:
             # Handle other task types
             task.status = TaskStatus.COMPLETED
-            task.output = "Task finished (Simulated for non-code tasks)"
+            task.output = f"Finished {task.type.value}"

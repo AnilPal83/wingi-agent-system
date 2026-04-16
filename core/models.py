@@ -12,6 +12,7 @@ class TaskStatus(str, Enum):
 class TaskType(str, Enum):
     PLAN = "plan"
     ARCHITECT = "architect"
+    MEMORY = "memory"
     CODE = "code"
     TEST = "test"
     VALIDATE = "validate"
