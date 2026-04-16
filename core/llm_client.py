@@ -1,21 +1,28 @@
 import os
 import json
-from pathlib import Path
 import google.generativeai as genai
 from dotenv import load_dotenv
+from .logger import setup_logger
 
-load_dotenv(dotenv_path=Path(__file__).resolve().parent.parent / ".env")
+logger = setup_logger("LLM")
+load_dotenv()
 
 class LLMClient:
     def __init__(self):
         self.api_key = os.getenv("GOOGLE_API_KEY")
         if not self.api_key:
+            logger.error("GOOGLE_API_KEY not found in .env file.")
             raise ValueError("❌ GOOGLE_API_KEY not found in .env file.")
+        
         genai.configure(api_key=self.api_key)
-        self.model = genai.GenerativeModel('gemini-2.0-flash')
+        self.model = genai.GenerativeModel('gemini-1.5-pro')
+        logger.info("Gemini 1.5 Pro client initialized.")
 
     def query(self, system_prompt: str, user_prompt: str, response_format="text"):
         """Queries the Gemini LLM and returns the response."""
+        logger.info(f"Sending query to Gemini (Format: {response_format})")
+        logger.debug(f"User Prompt (Truncated): {user_prompt[:100]}...")
+        
         try:
             combined_prompt = f"SYSTEM INSTRUCTION:\n{system_prompt}\n\nUSER REQUEST:\n{user_prompt}"
             
@@ -29,7 +36,8 @@ class LLMClient:
             )
             
             content = response.text
+            logger.debug(f"Received Response (Truncated): {content[:100]}...")
             return json.loads(content) if response_format == "json" else content
         except Exception as e:
-            print(f"⚠️ Gemini Error: {e}")
+            logger.error(f"Gemini API Error: {str(e)}")
             return None
