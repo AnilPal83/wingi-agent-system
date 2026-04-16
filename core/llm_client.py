@@ -12,15 +12,20 @@ class LLMClient:
     def __init__(self):
         self.project_id = os.getenv("VERTEX_PROJECT_ID")
         self.location = os.getenv("VERTEX_LOCATION", "us-central1")
+        self.credentials_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
         
         if not self.project_id:
             logger.error("VERTEX_PROJECT_ID not found in .env file.")
             raise ValueError("❌ VERTEX_PROJECT_ID not found in .env file.")
         
-        # Initialize Vertex AI
+        if self.credentials_path and os.path.exists(self.credentials_path):
+            logger.info(f"Using Service Account Key from: {self.credentials_path}")
+            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = self.credentials_path
+        else:
+            logger.warning("No Service Account Key found. Falling back to default authentication.")
+
         vertexai.init(project=self.project_id, location=self.location)
         
-        # We use gemini-1.5-pro for better quota stability compared to 2.0-flash
         self.model_name = os.getenv("VERTEX_MODEL_NAME", "gemini-1.5-pro")
         self.model = GenerativeModel(self.model_name)
         logger.info(f"Vertex AI initialized with model: {self.model_name}")
@@ -30,7 +35,6 @@ class LLMClient:
         logger.info(f"Sending query to Vertex AI (Format: {response_format})")
         
         try:
-            # Vertex AI uses System Instructions as a separate parameter
             model = GenerativeModel(
                 self.model_name,
                 system_instruction=[system_prompt]
@@ -46,7 +50,6 @@ class LLMClient:
             )
             
             content = response.text
-            logger.debug(f"Received Response (Truncated): {content[:100]}...")
             return json.loads(content) if response_format == "json" else content
             
         except Exception as e:
