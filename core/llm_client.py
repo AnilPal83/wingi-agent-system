@@ -1,9 +1,10 @@
 import os
 import json
+from pathlib import Path
 import google.generativeai as genai
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(dotenv_path=Path(__file__).resolve().parent.parent / ".env")
 
 class LLMClient:
     def __init__(self):
@@ -11,7 +12,7 @@ class LLMClient:
         if not self.api_key:
             raise ValueError("❌ GOOGLE_API_KEY not found in .env file.")
         genai.configure(api_key=self.api_key)
-        self.model = genai.GenerativeModel('gemini-1.5-pro')
+        self.model = genai.GenerativeModel('gemini-2.0-flash')
 
     def query(self, system_prompt: str, user_prompt: str, response_format="text"):
         """Queries the Gemini LLM and returns the response."""
