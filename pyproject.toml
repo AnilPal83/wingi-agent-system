@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "wingi-agent-system"
+version = "0.1.0"
+description = "An autonomous multi-agent orchestration framework prototype inspired by Emergent."
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+    {name = "Wingi", email = "wingi@emergent.sh"}
+]
+dependencies = [
+    "fastapi>=0.110.1",
+    "uvicorn>=0.25.0",
+    "google-cloud-aiplatform>=1.48.0",
+    "python-dotenv>=1.0.1",
+    "pydantic>=2.6.4",
+    "openai>=1.14.0",
+    "google-generativeai>=0.4.1"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0"
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["core*", "agents*", "tools*"]

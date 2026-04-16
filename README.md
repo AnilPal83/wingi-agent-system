@@ -4,13 +4,16 @@ An autonomous multi-agent orchestration framework prototype inspired by Emergent
 
 ## Key Features
 
-- **Live Gemini Integration**: Uses Google's Gemini 1.5 Pro for dynamic planning and coding.
+- **Live Gemini Integration**: Supports both Google AI Studio and **Vertex AI** (Enterprise).
 - **Autonomous Planning**: Decomposes user goals into a Dynamic Task Graph.
 - **Real Tool Execution**: Includes a ToolBox for file I/O and shell command execution.
 - **Stateful Orchestration**: Manages task dependencies and execution cycles.
 - **Web Dashboard**: Modern React UI to visualize agent progress.
+- **Structured Logging**: Emoji-enriched debugging logs for full transparency.
 
 ## Installation
+
+We use `pyproject.toml` for modern dependency management.
 
 1. Clone the repository:
    ```bash
@@ -18,15 +21,15 @@ An autonomous multi-agent orchestration framework prototype inspired by Emergent
    cd wingi-agent-system
    ```
 
-2. Install dependencies:
+2. Install the package and dependencies:
    ```bash
-   pip install google-generativeai python-dotenv pydantic fastapi uvicorn
+   pip install .
    ```
 
 3. Set up your environment variables:
    ```bash
    cp .env.example .env
-   # Add your GOOGLE_API_KEY to .env
+   # Add your VERTEX_PROJECT_ID or GOOGLE_API_KEY to .env
    ```
 
 ## Usage
@@ -49,7 +52,7 @@ Go to `localhost:5173` in your browser.
 
 ## Project Structure
 
-- `core/`: Core engine, Gemini client, and data models.
+- `core/`: Core engine, Gemini/Vertex clients, and data models.
 - `agents/`: System prompts for specialized roles.
 - `tools/`: Registry for file and system tools.
 - `ui/`: React TypeScript dashboard.
