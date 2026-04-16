@@ -17,7 +17,7 @@ class Orchestrator:
         self.toolbox = ToolBox()
         self.db = DBManager()
         self.is_running = True
-        self.workspace = f"/root/workspace/{project_name}"
+        self.workspace = os.path.join(os.getcwd(), "workspace", project_name)
         
         self.project_id = self.db.create_project(project_name, user_goal)
         logger.info(f"Initialized Orchestrator. Project ID: {self.project_id}")

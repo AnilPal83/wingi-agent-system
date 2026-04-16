@@ -7,3 +7,5 @@ ui/dist/
 # Service account keys — never commit these
 *-sa.json
 *-service-account.json
+# Generated project output
+workspace/
