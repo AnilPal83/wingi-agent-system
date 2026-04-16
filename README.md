@@ -43,43 +43,38 @@ Before you begin, ensure you have the following installed:
    cp .env.example .env
    ```
 
-2. **Edit `.env`** and add your Google Cloud Project ID:
+2. **Edit `.env`** and add your Google Cloud Project ID and Service Account Key path:
    ```env
    VERTEX_PROJECT_ID=your-project-id-here
    VERTEX_LOCATION=us-central1
    GOOGLE_APPLICATION_CREDENTIALS=service-account-key.json
    ```
 
-3. **Authenticate with Google Cloud (Option A - Recommended):**
-   Place your Service Account JSON key in the root folder and set the path in `.env`.
-
-   **Option B (Individual):**
-   Run `gcloud auth application-default login`.
+3. **Authenticate with Google Cloud:**
+   - **Option A (Recommended):** Place your Service Account JSON key in the root folder.
+   - **Option B (Individual):** Run `gcloud auth application-default login`.
 
 ---
 
-## 🚀 Running the System
+## 🚀 Running & Visualizing the System
 
-### Option A: Web Dashboard (Recommended)
-This gives you a visual view of the agent's task graph and real-time logs.
+To see what the agents are doing, start both the backend and frontend.
 
-1. **Start the Backend:**
-   ```bash
-   poetry run python server.py
-   ```
-
-2. **Start the Frontend (in a new terminal):**
-   ```bash
-   cd ui
-   npm run dev
-   ```
-3. Open **http://localhost:5173** in your browser.
-
-### Option B: CLI Mode
-For a fast, terminal-only experience.
+### 1. Start the Backend (Port 8000)
+This powers the orchestration engine and the persistence layer.
 ```bash
-poetry run python main.py
+poetry run python server.py
 ```
+- **Interactive API:** [http://localhost:8000/docs](http://localhost:8000/docs)
+- **Memory Inspector 🔍:** [http://localhost:8000/inspector](http://localhost:8000/inspector) (View the full audit trail and graph evolution).
+
+### 2. Start the Frontend (Port 5173)
+This is the main interaction layer.
+```bash
+cd ui
+npm run dev
+```
+- **Interactive Dashboard 🚀:** [http://localhost:5173](http://localhost:5173) (Chat with the agent and watch the live task graph).
 
 ---
 
@@ -96,11 +91,11 @@ poetry run python main.py
 
 ## 📁 Project Structure
 
-- `core/`: State machine, Vertex AI client, and data models.
+- `core/`: State machine, Vertex AI client, and SQLite database logic.
 - `agents/`: Specialized system prompts for each role.
 - `tools/`: The "hands" (File I/O and Shell tools).
 - `ui/`: React TypeScript dashboard.
-- `server.py`: FastAPI WebSocket server.
+- `server.py`: FastAPI WebSocket server and history endpoints.
 
 ---
 
