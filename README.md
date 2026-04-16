@@ -13,7 +13,7 @@ An autonomous multi-agent orchestration framework prototype inspired by Emergent
 
 ## Installation
 
-We use `pyproject.toml` for modern dependency management.
+We use **Poetry** for modern dependency and package management.
 
 1. Clone the repository:
    ```bash
@@ -21,12 +21,17 @@ We use `pyproject.toml` for modern dependency management.
    cd wingi-agent-system
    ```
 
-2. Install the package and dependencies:
+2. Install Poetry (if you don't have it):
    ```bash
-   pip install .
+   curl -sSL https://install.python-poetry.org | python3 -
    ```
 
-3. Set up your environment variables:
+3. Install the dependencies:
+   ```bash
+   poetry install
+   ```
+
+4. Set up your environment variables:
    ```bash
    cp .env.example .env
    # Add your VERTEX_PROJECT_ID or GOOGLE_API_KEY to .env
@@ -36,13 +41,13 @@ We use `pyproject.toml` for modern dependency management.
 
 ### CLI Mode
 ```bash
-python3 main.py
+poetry run python main.py
 ```
 
 ### Web Dashboard Mode
 1. Start the server:
    ```bash
-   python3 server.py
+   poetry run python server.py
    ```
 2. Run the UI (requires Node.js):
    ```bash
